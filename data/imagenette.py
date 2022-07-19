@@ -40,11 +40,13 @@ class ImagenetteDataset(Dataset):
         noisy_perc: int = 0,
         transform = None,
         target_transform = None,
+        device = "cpu"
     ):
         
         csv_data = pd.read_csv(os.path.join(root_dir, csv_filename))
         self.img_paths, self.labels = self.get_dataset(csv_data, train, noisy_perc)
         self.root_dir = root_dir
+        self.device = device
         
         self.transform = transform
         self.target_transform = target_transform
@@ -82,6 +84,8 @@ class ImagenetteDataset(Dataset):
         label = self.labels.iloc[idx]
         if self.target_transform:
             label = self.target_transform(label)
+
+        image, label = image.to(self.device), label.to(self.device)
         
         return image, label
 
