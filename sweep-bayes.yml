@@ -1,0 +1,21 @@
+program: train_classification.py
+method: bayes
+metric:
+  goal: minimize
+  name: test_loss
+parameters:
+  lr:
+    values: [0.1, 0.001, 0.01, 0.003]
+  decay:
+    values: [5e-4, 1e-5, 1e-6, 1e-7]
+  momentum:
+    values: [0.8, 0.9, 0.95]
+  batch_size:
+    values: [64, 128, 256]
+  n_epochs:
+    value: 50
+early_terminate:
+  type: hyperband
+  s: 2
+  eta: 3
+  max_iter: 50

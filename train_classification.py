@@ -78,7 +78,7 @@ def train_loop(dataloader, model, loss_fn, optimizer):
         if batch_idx % 25 == 0:
             loss, current = loss.item(), batch_idx * len(data)
             # print("acc output shapes: ", output.shape, label.shape)
-            train_acc = (output.argmax(1) == label.argmax(1)).type(torch.float).sum().item()
+            train_acc = (output.argmax(1) == label.argmax(1)).type(torch.float).mean().item()
             wandb.log({"train_accuracy":train_acc, "train_loss": loss})
             print(f"loss: {loss:>7f}  acc: {train_acc:>7f}  [{current:>5d}/{d_size:>5d}]")
 
@@ -125,10 +125,22 @@ def setup_training_parser():
         help="Number of epochs to run the training. (int, default = 100)",
     )
     parser.add_argument(
-        "--batch-size",
+        "--batch_size",
         default=64,
         type=int,
         help="Batch size for mini-batch training. (int, default = 20)",
+    )
+    parser.add_argument(
+        "--momentum",
+        default=0.9,
+        type=float,
+        help="Momentum used in SGD optimizer. (float, default = 0.9)",
+)
+    parser.add_argument(
+        "--decay",
+        default=5e-4,
+        type=float,
+        help="Weight Decay used in SGD optimizer. (float, default = 5e-4)",
     )
     parser.add_argument(
         "--lr",
@@ -143,11 +155,12 @@ def main():
     
     args = setup_training_parser()
 
-    config = vars(args)
-    config.update(momentum=0.9, weight_decay=5e-4, dataset="Imagenette", network="AlexNet")
+    default_config = vars(args)
+    default_config.update(dataset="Imagenette", network="AlexNet")
     
     # Setup wandb configuration
-    wandb.init(project="Imagenette", group="AlexNet-v0", config=config)
+    wandb.init(project="Imagenette", group="AlexNet-v0", config=default_config)
+    config = wandb.config
     # use wandb.config.update({}) to update hyperparameters and other configs you want to save
 
     torch.manual_seed(args.seed)
@@ -158,10 +171,10 @@ def main():
     print('Using device:', device)
     
     # setup data
-    train_dataset, test_dataset = get_imagenette_datasets(args.datadir, 0, device)
+    train_dataset, test_dataset = get_imagenette_datasets(config.datadir, 0, device)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
-    test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True)
+    test_dataloader = DataLoader(test_dataset, batch_size=config.batch_size, shuffle=True)
 
     # setup model
     model = AlexNet(in_channels=3, num_classes=10)
@@ -176,18 +189,20 @@ def main():
     # setup optimizer
     optimizer = torch.optim.SGD(
         model.parameters(), 
-        lr=args.lr, 
-        momentum=config["momentum"], 
-        weight_decay=config["weight_decay"])
+        lr=config.lr, 
+        momentum=config.momentum, 
+        weight_decay=config.decay)
     
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.1)
     wandb.config.update({"scheduler": scheduler})
     
-    for i in tqdm(range(args.n_epochs)):
+    for i in tqdm(range(config.n_epochs)):
         print(f"Epoch {i}\n--------------------------------")
         train_loop(train_dataloader, model, loss, optimizer)
         test_loop(test_dataloader, model, loss, scheduler)
         wandb.log({"lr": optimizer.param_groups[0]['lr']})
+        if i % 5 == 0:
+            torch.save(model.state_dict(), os.path.join(wandb.run.dir, "model.pt"))
 
 if __name__ == "__main__":
     main()
