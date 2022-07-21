@@ -2,6 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from collections import OrderedDict
 
+# Number of layers within each block, as specified in https://arxiv.org/abs/1409.1556 (Table 1)
 CONFIG_LAYERS = {
     "A": [1, 1, 2, 2, 2], # 11 layers
     "B": [2, 2, 2, 2, 2], # 13 layers
@@ -10,43 +11,44 @@ CONFIG_LAYERS = {
     "E": [2, 2, 4, 4, 4]  # 19 layers
 }
 
-
 class VGG(nn.Module):
     def __init__(
             self,
             in_channels: int = 3,
             num_classes: int = 10,
-            config: str = "D",
+            config_key: str = "D",
+            conv_layers: list = [64, 128, 256, 512, 512],
             lin_layers: list = [4096, 4096]
         ) -> None:
         super().__init__()
 
-        if config not in CONFIG_LAYERS.keys():
-            raise ValueError(f"{config} is not a valid setting. Choose from {CONFIG_LAYERS.keys()}")
+        if config_key not in CONFIG_LAYERS.keys():
+            raise ValueError(f"{config_key} is not a valid setting. Choose from {CONFIG_LAYERS.keys()}")
 
-        block_config = CONFIG_LAYERS[config]
-        channels = [in_channels, 64, 128, 256, 512, 512]
-        layer_dict = OrderedDict()
-        self.i = 1
+        block_config = CONFIG_LAYERS[config_key]
+        channels = [in_channels] + conv_layers
+        cnn_layer_dict = OrderedDict()
+        self.i = 1 # used for naming each layer
         
         # variable for adding 1x1 convs for config C
         last_single_conv = False 
         
+        # create each conv block
         for idx, n_layers in enumerate(block_config):
-            if config == "C" and idx > 1:
+            if config_key == "C" and idx > 1:
                 last_single_conv = True
-            self.add_conv_block(layer_dict, channels[idx], channels[idx+1], block_idx=idx+1, 
+            self.add_conv_block(cnn_layer_dict, channels[idx], channels[idx+1], block_idx=idx+1, 
                                 n_layers=n_layers, last_single_conv=last_single_conv)
         
-        self.vgg = nn.Sequential(layer_dict)
+        self.cnn = nn.Sequential(cnn_layer_dict)
 
         # flatten
         self.classifier = nn.Sequential(
             nn.Flatten(),
             nn.Dropout(p=0.5),
-            nn.Linear(25088, lin_layers[0]),
+            nn.Linear(channels[-1]*7*7, lin_layers[0]),
             nn.ReLU(),
-            nn.Dropout(p=0.5), # when to add as functional Dropout vs in sequential 
+            nn.Dropout(p=0.5),
             nn.Linear(lin_layers[0], lin_layers[1]),    
             nn.ReLU(),
             nn.Linear(lin_layers[1], num_classes)
@@ -68,7 +70,7 @@ class VGG(nn.Module):
         layer_dict[f"block{block_idx}_maxpool"] = nn.MaxPool2d(kernel_size=(2,2), stride=2)
 
     def forward(self, x):
-        x = self.vgg(x)
+        x = self.cnn(x)
         logits = self.classifier(x)
         return logits
 

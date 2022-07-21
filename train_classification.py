@@ -6,6 +6,7 @@ import numpy as np
 # from PIL import Image
 # import random
 from tqdm import tqdm
+import yaml
 
 import torch
 from torch import nn
@@ -16,9 +17,7 @@ import wandb
 
 # TODO: create a model and dataset directory
 from data.imagenette import ImagenetteDataset, IMAGENET_RGB_MEANS, IMAGENET_RGB_STDS
-from models.vision.alexnet import AlexNet
-from models.vision.vgg import VGG
-
+from models.vision import AlexNet, VGG
 
 def get_imagenette_datasets(datadir, noisy_perc=0, device="cpu"):
     data_transforms = {
@@ -114,6 +113,18 @@ def setup_training_parser():
         type=str,
     )
     parser.add_argument(
+        "--model",
+        default="VGG11", 
+        type=str,
+        help="Model Name",
+    )
+    parser.add_argument(
+        "--yaml",
+        default="./models/configs/config-vgg-small.yaml", 
+        type=str,
+        help="Save model when done.",
+    )
+    parser.add_argument(
         "--seed",
         default=0,
         type=int,
@@ -121,9 +132,9 @@ def setup_training_parser():
     )
     parser.add_argument(
         "--n_epochs",
-        default=100,
+        default=75,
         type=int,
-        help="Number of epochs to run the training. (int, default = 100)",
+        help="Number of epochs to run the training. (int, default = 75)",
     )
     parser.add_argument(
         "--batch_size",
@@ -157,20 +168,32 @@ def setup_training_parser():
 
     return parser.parse_args()
 
+def load_model(model_name, net_config, in_channels=3, num_classes=10):
+    model_name = model_name.upper()
+    if model_name == "ALEXNET":
+        return AlexNet(in_channels, num_classes)
+    elif model_name[:3] == "VGG":
+        return VGG(in_channels, num_classes, **net_config)
+
 def main():
     
     args = setup_training_parser()
-
     default_config = vars(args)
+
+    with open(args.yaml, "r") as f:
+        net_config = yaml.safe_load(f)
+    print(net_config)
+
     # add notes, tags, 
     default_config.update(
         dataset="Imagenette", 
-        network="VGG11",
-        lin_layers=[2048, 512])
+        network=args.model, 
+        **net_config)
     
     # Setup wandb configuration
-    wandb.init(project="Imagenette", group="VGG11-v0", config=default_config)
+    wandb.init(project="Imagenette", group=f"{args.model}-v0", config=default_config)
     config = wandb.config
+    print("\nConfig:\n", config)
     # use wandb.config.update({}) to update hyperparameters and other configs you want to save
 
     torch.manual_seed(args.seed)
@@ -187,8 +210,11 @@ def main():
     test_dataloader = DataLoader(test_dataset, batch_size=config.batch_size, shuffle=True)
 
     # setup model
-    # model = AlexNet(in_channels=3, num_classes=10)
-    model = VGG(in_channels=3, num_classes=10, config="A")
+    model = load_model(config.model, net_config)
+
+    print(model)
+    print()
+
     model.to(device)
 
     # track gradients
