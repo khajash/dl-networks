@@ -67,11 +67,11 @@ if __name__ == "__main__":
     from torchsummary import summary
 
 
-    model = AlexNet(3, 10).cuda()
+    model = AlexNet(3, 10)
     print(model)
 
     b, h, w, d = 64, 224, 224, 3
-    summary(model, (d, h, w))
+    summary(model, input_size=(d, h, w), batch_size=b, device='cpu')
     # input = torch.randn(b, h, w, d)
     # print(input.shape)
 

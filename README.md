@@ -1,4 +1,5 @@
 # Deep Learning Network Implementations
+This repo will have various deep learning network implementations and data loaders. The networks will cover a handful of models for image classification, generative networks, and reinforcement learning. I use PyTorch for networks/training and am logging metrics using Weights and Biases.  
 
 ## Datasets
 - **Classification:** 
@@ -7,3 +8,4 @@
 ## Networks
 -  **Classification:**
     - AlexNet
+    - VGG 

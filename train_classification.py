@@ -16,7 +16,8 @@ import wandb
 
 # TODO: create a model and dataset directory
 from data.imagenette import ImagenetteDataset, IMAGENET_RGB_MEANS, IMAGENET_RGB_STDS
-from dl.vision.alexnet import AlexNet
+from models.vision.alexnet import AlexNet
+from models.vision.vgg import VGG
 
 
 def get_imagenette_datasets(datadir, noisy_perc=0, device="cpu"):
@@ -128,7 +129,7 @@ def setup_training_parser():
         "--batch_size",
         default=64,
         type=int,
-        help="Batch size for mini-batch training. (int, default = 20)",
+        help="Batch size for mini-batch training. (int, default = 64)",
     )
     parser.add_argument(
         "--momentum",
@@ -148,6 +149,11 @@ def setup_training_parser():
         type=float,
         help="Learning rate. (float, default = 1e-4)",
     )
+    parser.add_argument(
+        "--save_model",
+        action="store_true",
+        help="Save model when done.",
+    )
 
     return parser.parse_args()
 
@@ -156,10 +162,14 @@ def main():
     args = setup_training_parser()
 
     default_config = vars(args)
-    default_config.update(dataset="Imagenette", network="AlexNet")
+    # add notes, tags, 
+    default_config.update(
+        dataset="Imagenette", 
+        network="VGG11",
+        lin_layers=[2048, 512])
     
     # Setup wandb configuration
-    wandb.init(project="Imagenette", group="AlexNet-v0", config=default_config)
+    wandb.init(project="Imagenette", group="VGG11-v0", config=default_config)
     config = wandb.config
     # use wandb.config.update({}) to update hyperparameters and other configs you want to save
 
@@ -177,7 +187,8 @@ def main():
     test_dataloader = DataLoader(test_dataset, batch_size=config.batch_size, shuffle=True)
 
     # setup model
-    model = AlexNet(in_channels=3, num_classes=10)
+    # model = AlexNet(in_channels=3, num_classes=10)
+    model = VGG(in_channels=3, num_classes=10, config="A")
     model.to(device)
 
     # track gradients
@@ -201,7 +212,7 @@ def main():
         train_loop(train_dataloader, model, loss, optimizer)
         test_loop(test_dataloader, model, loss, scheduler)
         wandb.log({"lr": optimizer.param_groups[0]['lr']})
-        if i % 5 == 0:
+        if i % 5 == 0 and config.save_model:
             torch.save(model.state_dict(), os.path.join(wandb.run.dir, "model.pt"))
 
 if __name__ == "__main__":
