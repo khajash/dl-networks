@@ -11,27 +11,37 @@ class AlexNet(nn.Module):
             self,
             in_channels: int = 3,
             num_classes: int = 10,
+            conv_layers: list = [96, 256, 384, 384, 256],
+            lin_layers: list = [4096, 4096]
         ) -> None:
         super().__init__()
 
-        # Input: 224x224x3 -- add (2,2) padding to enable this to work
-        self.conv1 = nn.Conv2d(in_channels, 96, kernel_size=(11,11), stride=4, padding=(2,2), bias=True)
-        self.bn1 = nn.BatchNorm2d(96)
+        # Input: 3x224x224 -- add (2,2) padding to enable this to work
+        self.conv1 = nn.Conv2d(in_channels, conv_layers[0], kernel_size=(11,11), stride=4, padding=(2,2), bias=True)
+        self.bn1 = nn.BatchNorm2d(conv_layers[0])
+        # Output: C0x55x55
         self.pool1 = nn.MaxPool2d(kernel_size=3, stride=2)
-        
-        self.conv2 = nn.Conv2d(96, 256, kernel_size=(5,5), stride=1, padding='same', bias=True) 
-        self.bn2 = nn.BatchNorm2d(256)
-        self.pool2 = nn.MaxPool2d(kernel_size=3, stride=2)
+        # Output: C0x27x27
 
-        self.conv3 = nn.Conv2d(256, 384, kernel_size=(3,3), stride=1, padding='same', bias=True)
-        self.conv4 = nn.Conv2d(384, 384, kernel_size=(3,3), stride=1, padding='same', bias=True)
-        self.conv5 = nn.Conv2d(384, 256, kernel_size=(3,3), stride=1, padding='same', bias=True)
+        self.conv2 = nn.Conv2d(conv_layers[0], conv_layers[1], kernel_size=(5,5), stride=1, padding='same', bias=True) 
+        self.bn2 = nn.BatchNorm2d(conv_layers[1])
+        # Output: C1x27x27
+        self.pool2 = nn.MaxPool2d(kernel_size=3, stride=2)
+        # Output: C1x13x13
+
+        self.conv3 = nn.Conv2d(conv_layers[1], conv_layers[2], kernel_size=(3,3), stride=1, padding='same', bias=True)
+        # Output: C2x13x13
+        self.conv4 = nn.Conv2d(conv_layers[2], conv_layers[3], kernel_size=(3,3), stride=1, padding='same', bias=True)
+        # Output: C3x13x13
+        self.conv5 = nn.Conv2d(conv_layers[3], conv_layers[4], kernel_size=(3,3), stride=1, padding='same', bias=True)
+        # Output: C4x13x13
         self.pool5 = nn.MaxPool2d(kernel_size=3, stride=2)
+        # Output: C5x6x6
 
         # flatten
-        self.fc1 = nn.Linear(9216, 4096)
-        self.fc2 = nn.Linear(4096, 4096)
-        self.fc3 = nn.Linear(4096, num_classes)
+        self.fc1 = nn.Linear(conv_layers[-1]*6*6, lin_layers[0])
+        self.fc2 = nn.Linear(lin_layers[0], lin_layers[1])
+        self.fc3 = nn.Linear(lin_layers[1], num_classes)
 
 
     def forward(self, x):
