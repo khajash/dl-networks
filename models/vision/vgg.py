@@ -37,7 +37,7 @@ class VGG(nn.Module):
         for idx, n_layers in enumerate(block_config):
             if config_key == "C" and idx > 1:
                 last_single_conv = True
-            self.add_conv_block(cnn_layer_dict, channels[idx], channels[idx+1], block_idx=idx+1, 
+            self._add_conv_block(cnn_layer_dict, channels[idx], channels[idx+1], block_idx=idx+1, 
                                 n_layers=n_layers, last_single_conv=last_single_conv)
         
         self.cnn = nn.Sequential(cnn_layer_dict)
@@ -54,20 +54,20 @@ class VGG(nn.Module):
             nn.Linear(lin_layers[1], num_classes)
         )
 
-    def add_conv_block(self, layer_dict, in_channels, block_channels, block_idx, n_layers, last_single_conv=False):
+    def _add_conv_block(self, layer_dict, in_channels, block_channels, block_idx, n_layers, last_single_conv=False):
         for j in range(n_layers):
             if last_single_conv and j == (n_layers - 1):
                 kernel = (1,1)
             else:
                 kernel = (3,3)
             
-            layer_dict[f"block{block_idx}_conv{self.i}"] = nn.Conv2d(
+            layer_dict[f"conv{block_idx}_{self.i}"] = nn.Conv2d(
                 in_channels, block_channels, kernel_size=kernel, stride=1, padding="same", bias=True)
-            layer_dict[f"block{block_idx}_relu{self.i}"] = nn.ReLU()
+            layer_dict[f"relu{block_idx}_{self.i}"] = nn.ReLU()
             
             in_channels = block_channels
             self.i += 1
-        layer_dict[f"block{block_idx}_maxpool"] = nn.MaxPool2d(kernel_size=(2,2), stride=2)
+        layer_dict[f"maxpool{block_idx}_"] = nn.MaxPool2d(kernel_size=(2,2), stride=2)
 
     def forward(self, x):
         x = self.cnn(x)
