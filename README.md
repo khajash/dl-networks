@@ -9,3 +9,5 @@ This repo will have various deep learning network implementations and data loade
 -  **Classification:**
     - AlexNet
     - VGG 
+## Notebooks
+- [Custom-Pytorch-Dataset_Imagenette.ipynb](https://github.com/khajash/dl-networks/blob/main/notebooks/Custom-Pytorch-Dataset_Imagenette.ipynb) - Notebook walks through implementing a custom PyTorch dataset with the Imagenette dataset.
