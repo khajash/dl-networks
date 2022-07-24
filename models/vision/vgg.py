@@ -79,7 +79,7 @@ if __name__ == "__main__":
     import torch
     from torchsummary import summary
 
-    model = VGG(3, 10, config="A").cuda()
+    model = VGG(3, 10, config_key="A").cuda()
     print(model)
 
     b, h, w, d = 64, 224, 224, 3
