@@ -1,0 +1,2 @@
+config_key: 18
+conv_layers: [64, 128, 256, 512]
