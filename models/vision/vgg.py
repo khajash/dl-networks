@@ -45,12 +45,12 @@ class VGG(nn.Module):
         # flatten
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Dropout(p=0.5),
             nn.Linear(channels[-1]*7*7, lin_layers[0]),
             nn.ReLU(),
             nn.Dropout(p=0.5),
             nn.Linear(lin_layers[0], lin_layers[1]),    
             nn.ReLU(),
+            nn.Dropout(p=0.5),
             nn.Linear(lin_layers[1], num_classes)
         )
 
