@@ -1,0 +1,10 @@
+in_channels: 3
+num_classes: 10
+fkernel: 7
+fstride: 2
+ffilters: 16
+to_pool: false
+block_config: [14, 14, 14]
+conv_layers: [16, 32, 64]
+shortcut: "proj"
+block_type: "basic"
