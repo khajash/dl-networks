@@ -1,10 +1,5 @@
 import os
 import numpy as np
-# import pandas as pd
-# from skimage import io, transform
-# import matplotlib.pyplot as plt
-# from PIL import Image
-# import random
 from tqdm import tqdm
 import yaml
 
@@ -17,7 +12,7 @@ import wandb
 
 # TODO: create a model and dataset directory
 from data.imagenette import ImagenetteDataset, IMAGENET_RGB_MEANS, IMAGENET_RGB_STDS
-from models.vision import AlexNet, VGG, ResNet
+from models.vision import AlexNet, VGG, ResNet, ResNetBase
 
 def get_imagenette_datasets(datadir, noisy_perc=0, device="cpu"):
     data_transforms = {
@@ -174,8 +169,10 @@ def load_model(model_name, net_config, in_channels=3, num_classes=10):
         return AlexNet(in_channels, num_classes)
     elif model_name[:3] == "VGG":
         return VGG(in_channels, num_classes, **net_config)
+    elif model_name == "RESNET_SMALL":
+        return ResNetBase(**net_config)
     elif model_name[:3] == "RES":
-        return ResNet(in_channels, num_classes, **net_config)
+        return ResNet(**net_config)
 
 def main():
     
