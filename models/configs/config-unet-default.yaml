@@ -1,0 +1,5 @@
+in_channels: 3
+num_classes: 10
+img_size: 572
+net_depth: 5
+ffilters: 64

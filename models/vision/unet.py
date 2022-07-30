@@ -54,7 +54,7 @@ class UpBlock(nn.Module):
 class UNet(nn.Module):
     """
     UNet model based on paper "U-Net: Convolutional Networks for Biomedical Image Segmentation"
-
+    https://arxiv.org/abs/1505.04597
     """
     def __init__(
         self, 
