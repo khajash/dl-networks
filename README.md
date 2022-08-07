@@ -1,5 +1,5 @@
 # Deep Learning Network Implementations
-This repo will have various deep learning network implementations and data loaders. The networks will cover a handful of models for image classification, image classification, and generative networks. I use PyTorch for networks/training and am logging metrics using Weights and Biases.  
+This repo will have various deep learning network implementations and data loaders. The networks will cover a handful of models for image classification, image segmentation, and generative networks. I use PyTorch for networks/training and am logging metrics using Weights and Biases.  
 
 ## Datasets
 - **Classification:** 
