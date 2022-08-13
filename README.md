@@ -14,3 +14,24 @@ This repo will have various deep learning network implementations and data loade
     - UNet [(Ronneberger et al., 2015)](https://arxiv.org/abs/1505.04597)
 ## Notebooks
 - [Custom-Pytorch-Dataset_Imagenette.ipynb](https://github.com/khajash/dl-networks/blob/main/notebooks/Custom-Pytorch-Dataset_Imagenette.ipynb) - Notebook walks through implementing a custom PyTorch dataset with the Imagenette dataset.
+
+## Setup
+- Recommended to use a virtual environment, such as `venv`, `virtualenv` or `conda`
+
+```
+git clone https://github.com/khajash/dl-networks.git
+cd dl-networks
+python -m venv .env
+source .env/bin/activate
+pip install -e .
+```
+
+## Usage
+- To use Imagenette dataset, dowload from [repo here](https://github.com/fastai/imagenette).
+- Create a config file for your network of choice in `dlnets/models/configs` 
+-  The `model` argument in the command line is used as the wandb group and also selects the model class to initialize. Examples include: `ALEXNET`, `VGG11`, `RESNET_SMALL`, `RESNET18`. Use the config file to choose the network parameters, changing the value in the model name (e.g. RESNET18, VGG11) does not currently change the network parameters.
+
+```
+cd dlnets/train
+python train_classification.py --datadir path/to/imagenette2 --model VGG11 --yaml ../models/configs/config-vgg-small.yaml
+```
