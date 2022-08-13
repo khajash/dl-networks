@@ -2,7 +2,7 @@ from typing import List
 import torch
 import torch.nn as nn
 from collections import OrderedDict
-from models.layers.resnet_blocks import BasicBlock, BottleneckBlock
+from dlnets.models.layers.resnet_blocks import BasicBlock, BottleneckBlock
 
 
 class ResNetBase(nn.Module):

@@ -11,8 +11,8 @@ from torchvision import transforms, utils
 import wandb
 
 # TODO: create a model and dataset directory
-from data.imagenette import ImagenetteDataset, IMAGENET_RGB_MEANS, IMAGENET_RGB_STDS
-from models.vision import AlexNet, VGG, ResNet, ResNetBase
+from dlnets.data.imagenette import ImagenetteDataset, IMAGENET_RGB_MEANS, IMAGENET_RGB_STDS
+from dlnets.models.vision import AlexNet, VGG, ResNet, ResNetBase
 
 def get_imagenette_datasets(datadir, noisy_perc=0, device="cpu"):
     data_transforms = {
@@ -104,7 +104,7 @@ def setup_training_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--datadir", 
-        default="../datasets/imagenette2", 
+        default="../../..s/datasets/imagenette2", 
         type=str,
     )
     parser.add_argument(
@@ -115,7 +115,7 @@ def setup_training_parser():
     )
     parser.add_argument(
         "--yaml",
-        default="./models/configs/config-vgg-small.yaml", 
+        default="../models/configs/config-vgg-small.yaml", 
         type=str,
         help="Save model when done.",
     )

@@ -1,3 +1,4 @@
+# Easiest to copy this over to sweep when running in wandb
 program: train_classification.py
 method: bayes
 metric:
